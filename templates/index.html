@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://res.cloudinary.com/dcajb02df/image/upload/v1753960691/logo_pyncju.png" type="image/png"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PassPort Photo Pro</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Style for the particle background */
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background-color: #1a202c;
+      z-index: -1;
+    }
+    
+    .transition-all {
+      transition: all 0.3s ease-in-out;
+    }
+   
+    .glow-shadow {
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.5), 0 0 5px rgba(59, 130, 246, 0.3);
+    }
+  </style>
+  
+  <!-- Add Cropper.js -->
+  <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white" oncontextmenu="return false">
+
+  <!-- Particle background container -->
+  <div id="particles-js"></div>
+
+  <!-- Header Section -->
+  <header class="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-10">
+    <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+          <span class="text-2xl font-bold text-blue-400">Passport Photo Pro</span>
+        </div>
+        <div class="flex items-center">
+        <!--<a href="/login" id="loginBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-all transform hover:scale-105">
+            Premium
+          </a>-->
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+   <div class="bg-yellow-500 text-black py-2 px-4 font-medium text-center text-sm sm:text-base shadow-md">
+  <marquee behavior="scroll" direction="left" scrollamount="5">
+    🚧 This site is currently in beta. If you encounter any issues, please use the feedback form below to report them. We'll notify you once they're resolved. Thank you!
+  </marquee>
+</div>
+
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="relative bg-gray-800/60 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl p-8 max-w-2xl mx-auto text-center">
+      
+      <!-- Drop Zone for Image Upload -->
+      <div id="dropZone" class="border-2 border-dashed border-gray-600 hover:border-blue-400 bg-gray-900/50 rounded-xl p-10 cursor-pointer transition-all">
+        <input type="file" id="imageInput" class="hidden" accept="image/*" />
+        <div class="flex flex-col items-center">
+          <svg class="w-16 h-16 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4h-2m-6 4h6m-3-4v4"></path></svg>
+          <p class="text-lg font-semibold">Drag & Drop or Click to Upload</p>
+          <p class="text-sm text-gray-400">Upload your cropped image</p>
+          <p class="text-sm text-gray-400">Supported formats: JPG, JPEG, PNG, WEBP</p>
+        </div>
+      </div>
+      
+      <!-- Image Preview for Cropping -->
+      <div class="mt-6">
+        <div class="relative max-w-xs mx-auto">
+          <img id="cropImage" src="" class="max-w-full rounded-lg shadow-lg hidden" />
+        </div>
+        <button id="cropBtn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-all hidden">
+          Crop Image
+        </button>
+        <img id="preview" src="" alt="Image preview" class="max-w-xs mx-auto rounded-lg shadow-lg hidden" />
+        <embed id="pdfPreview" type="application/pdf" class="w-full h-[500px] mt-4 hidden rounded-lg" />
+      </div>
+
+      <!-- Controls -->
+      <div id="controls" class="mt-8 space-y-6">
+        <div class="flex items-center justify-center space-x-4">
+          <label for="copies" class="font-medium">Copies:</label>
+          <input type="number" id="copies" value="6" min="1" max="54" class="bg-gray-700 border border-gray-600 rounded-lg w-20 p-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <button type="button" id="toggleAdvanced" class="text-blue-400 hover:text-blue-300 transition-all">Advanced Options</button>
+
+        <div id="advancedOptions" class="hidden bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+            <div>
+              <label for="width" class="block mb-1 text-sm font-medium">Width (px)</label>
+              <input type="number" id="width" value="400" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="height" class="block mb-1 text-sm font-medium">Height (px)</label>
+              <input type="number" id="height" value="400" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+            </div>
+            <div>
+              <label for="spacing" class="block mb-1 text-sm font-medium">Spacing (px)</label>
+              <input type="number" id="spacing" value="50" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+            </div>
+            <div>
+              <label for="border" class="block mb-1 text-sm font-medium">Border (px)</label>
+              <input type="number" id="border" value="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <button type="button" id="generateBtn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 glow-shadow disabled:opacity-50 disabled:cursor-not-allowed">
+              Generate Sheet
+            </button>
+            <button id="downloadBtn" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 hidden">
+              Download PDF
+            </button>
+        </div>
+        <div id="loading" class="hidden text-blue-400 font-semibold">Processing image... please wait</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Feedback Button -->
+  <button id="feedbackBtn" class="fixed bottom-5 right-5 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-full shadow-lg transition-all transform hover:rotate-12">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+  </button>
+
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-20 hidden">
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-8 max-w-md w-full relative">
+      <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
+      <h2 class="text-2xl font-bold mb-4">Feedback / Bug Report</h2>
+      <form id="feedbackForm" class="space-y-4">
+        <input type="text" name="contact" placeholder="Your Contact (Email or Phone)" required class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <textarea name="message" placeholder="Describe your issue or suggestion..." required rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all">Submit</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Notification Box -->
+  <div id="notification" class="fixed bottom-1/2 right-5 bg-red-500 text-white py-2 px-4 rounded-lg shadow-lg transform translate-x-[120%] transition-transform duration-500">
+      <p id="notification-message"></p>
+  </div>
+
+  <!-- Particles.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <script>
+    emailjs.init("XJqjmVHK4ISEX0Zam"); 
+
+    // --- Particle.js Background Animation ---
+    particlesJS('particles-js', {
+      "particles": {
+        "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+        "color": { "value": "#4a5568" },
+        "shape": { "type": "circle" },
+        "opacity": { "value": 0.5, "random": true },
+        "size": { "value": 3, "random": true },
+        "line_linked": { "enable": true, "distance": 150, "color": "#718096", "opacity": 0.4, "width": 1 },
+        "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out" }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" } },
+        "modes": { "repulse": { "distance": 100 }, "push": { "particles_nb": 4 } }
+      },
+      "retina_detect": true
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const pdfPreview = document.getElementById('pdfPreview');
+    const loading = document.getElementById('loading');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const toggleBtn = document.getElementById('toggleAdvanced');
+    const advancedDiv = document.getElementById('advancedOptions');
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const closeModal = document.getElementById('closeModal');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notification-message');
+    
+    // Cropper 
+    const cropImage = document.getElementById('cropImage');
+    const cropBtn = document.getElementById('cropBtn');
+    
+    let selectedFile = null;
+    let cropper = null;
+
+    // --- Notification Function ---
+    function showNotification(message, isError = true) {
+        notificationMessage.textContent = message;
+        notification.classList.remove('bg-red-500', 'bg-green-500');
+        notification.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+        notification.classList.remove('translate-x-[120%]');
+        notification.classList.add('translate-x-0');
+        setTimeout(() => {
+            notification.classList.remove('translate-x-0');
+            notification.classList.add('translate-x-[120%]');
+        }, 3000);
+    }
+
+    // --- Event Listeners ---
+
+    // Toggle Advanced Options
+    toggleBtn.addEventListener('click', () => {
+      const isVisible = advancedDiv.style.display === 'block';
+      advancedDiv.style.display = isVisible ? 'none' : 'block';
+      toggleBtn.textContent = isVisible ? 'Show Advanced Options' : 'Hide Advanced Options';
+    });
+
+    // Image Upload Logic
+    dropZone.addEventListener('click', () => imageInput.click());
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('border-blue-400', 'bg-gray-700/50');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-blue-400', 'bg-gray-700/50');
+    });
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400', 'bg-gray-700/50');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (file) handleFile(file);
+    });
+
+    //  handleFile to initialize Cropper
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showNotification("Please upload a valid image file.");
+        return;
+      }
+      selectedFile = file;
+      
+      //  cropper I F
+      cropImage.src = URL.createObjectURL(file);
+      cropImage.classList.remove('hidden');
+      cropBtn.classList.remove('hidden');
+      
+      // Hide other previews
+      preview.classList.add('hidden');
+      pdfPreview.classList.add('hidden');
+      downloadBtn.classList.add('hidden');
+
+      // Destroy old cropper if exists
+      if (cropper) cropper.destroy();
+
+      // Init Cropper with fixed aspect ratio
+      cropper = new Cropper(cropImage, {
+        aspectRatio: 384 / 472,
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 1,
+        minCropBoxWidth: 384,
+        minCropBoxHeight: 472,
+        ready() {
+          
+          const cropBoxData = cropper.getCropBoxData();
+          cropBoxData.width = 384;
+          cropBoxData.height = 472;
+          cropper.setCropBoxData(cropBoxData);
+        }
+      });
+    }
+
+    // Crop button 
+    cropBtn.addEventListener('click', () => {
+      if (!cropper) return;
+
+      // Get cropped canvas 
+      const canvas = cropper.getCroppedCanvas({
+        width: 384,
+        height: 472
+      });
+
+      // Convert canvas to Blob
+      canvas.toBlob((blob) => {
+        selectedFile = new File([blob], 'cropped-image.png', { type: 'image/png' });
+
+        //  preview of cropped image
+        const previewUrl = URL.createObjectURL(blob);
+        preview.src = previewUrl;
+        preview.classList.remove('hidden');
+        
+        // Hide cropper interface
+        cropImage.classList.add('hidden');
+        cropBtn.classList.add('hidden');
+
+        showNotification("Image cropped successfully.", false);
+      }, 'image/png');
+    });
+
+    // Generate PDF Logic
+    generateBtn.addEventListener('click', () => {
+      if (!selectedFile) {
+        showNotification("Please upload an image first.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      formData.append('copies', document.getElementById('copies').value);
+      formData.append('width', document.getElementById('width').value);
+      formData.append('height', document.getElementById('height').value);
+      formData.append('spacing', document.getElementById('spacing').value);
+      formData.append('border', document.getElementById('border').value);
+
+      loading.classList.remove('hidden');
+      generateBtn.disabled = true;
+      downloadBtn.classList.add('hidden');
+      
+      fetch('/process', { method: 'POST', body: formData })
+        .then(async response => {
+          if (response.status === 429) { // Rate limit handling
+            showNotification("Server Daily Quota Exceeded. Please try again later.");
+            return null;
+          }
+          if (response.status === 410) { // Foreground removal error
+            showNotification("Cannot Detect Face and Background in Image.");
+            return null;
+          }
+          if (response.status === 500) { // api exhaustion error
+            showNotification("Internal Error ,try again later.");
+            return null;
+          }
+
+          if (!response.ok) throw new Error("Processing failed on the server, please try again later.");
+          return response.blob();
+        })
+        .then(blob => {
+          if (!blob) return;
+          
+          const url = URL.createObjectURL(blob);
+          pdfPreview.classList.remove('hidden');
+          pdfPreview.src = url;
+          preview.classList.add('hidden');
+          cropImage.classList.add('hidden');
+
+          downloadBtn.classList.remove('hidden');
+          downloadBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'passport-sheet.pdf';
+            link.click();
+          };
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          showNotification("Image processing failed... Try again Later ");
+        })
+        .finally(() => {
+          loading.classList.add('hidden');
+          generateBtn.disabled = false;
+        });
+    });
+
+    // Feedback Modal Logic
+    feedbackBtn.addEventListener('click', () => feedbackModal.classList.remove('hidden'));
+    closeModal.addEventListener('click', () => feedbackModal.classList.add('hidden'));
+
+    feedbackForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const contact = feedbackForm.contact.value.trim();
+      const message = feedbackForm.message.value.trim();
+
+      if (!contact || !message) {
+        showNotification("Please fill out all fields in the feedback form.");
+        return;
+      }
+      
+      const submitButton = feedbackForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+
+      emailjs.send("service_aoewzsq", "template_hbw13lt", {
+        contact: contact,
+        message: message,
+        user_agent: navigator.userAgent,
+        time: new Date().toLocaleString()
+      })
+      .then(() => {
+        showNotification("Thank you! Your feedback has been submitted.", false);
+        feedbackModal.classList.add('hidden');
+        feedbackForm.reset();
+      })
+      .catch((err) => {
+        console.error('EmailJS Error:', err);
+        showNotification("Failed to send feedback. Please try again.");
+      })
+      .finally(() => {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit';
+      });
+    });
+  </script>
+</body>
+</html>
