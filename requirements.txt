@@ -1,7 +1,7 @@
 ﻿blinker==1.9.0
 certifi==2025.7.14
 charset-normalizer==3.4.2
-click==8.2.1
+click
 cloudinary==1.44.1
 colorama==0.4.6
 Deprecated==1.2.18
