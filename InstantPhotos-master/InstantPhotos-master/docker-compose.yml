@@ -1,0 +1,9 @@
+services:
+  instantphotos:
+    build: .
+    container_name: instantphotos
+
+    ports:
+      - "5000:5000"
+
+    restart: always

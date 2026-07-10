@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="https://res.cloudinary.com/dcajb02df/image/upload/v1753960691/logo_pyncju.png"
+      type="image/png"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PassPort Photo Pro</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      #particles-js {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: #1a202c;
+        z-index: -1;
+      }
+      .transition-all {
+        transition: all 0.3s ease-in-out;
+      }
+      .glow-shadow {
+        box-shadow:
+          0 0 15px rgba(59, 130, 246, 0.5),
+          0 0 5px rgba(59, 130, 246, 0.3);
+      }
+      .photo-card {
+        transition: all 0.3s ease;
+      }
+      .photo-card:hover {
+        transform: translateY(-2px);
+      }
+      .cropper-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+
+      .cropper-modal-box {
+        background: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 520px;
+        width: 95%;
+        max-height: 90vh;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-900 text-white" oncontextmenu="return false;">
+    <div id="particles-js"></div>
+
+    <!-- Header -->
+    <header
+      class="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-10"
+    >
+      <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <span class="text-2xl font-bold text-blue-400"
+            >Passport Photo Pro</span
+          >
+        </div>
+      </nav>
+    </header>
+
+    <!-- Beta Banner -->
+    <div
+      class="bg-yellow-500 text-black py-2 px-4 font-medium text-center text-sm sm:text-base shadow-md"
+    >
+      <marquee behavior="scroll" direction="left" scrollamount="5">
+        Step 1 : Enter Your Remove BG Api key and click on save button. Step 2 : Add your photo and click on generate button. Step 3 : Save your time and enjoy.
+      </marquee>
+    </div>
+
+    <div class="flex justify-center items-center">
+      <input class="m-4 p-2 hover:bg-blue-400 hover:scale-105 transition-all transform rounded-xl text-sm w-[400px] text-black bg-blue-100"  placeholder="Enter Your Remove BG API Key"  type="text" id="api-key-remove-bg" />
+      <button onclick="handleAPIKey()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all transform hover:scale-105 glow-shadow disabled:opacity-50 disabled:cursor-not-allowed" >
+        Save API Key
+      </button>
+    </div>
+
+    <!-- Main -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div
+        class="relative bg-gray-800/60 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl p-8 max-w-3xl mx-auto"
+      >
+        <h2 class="text-2xl font-bold text-center mb-2">Upload Photos</h2>
+        <p class="text-gray-400 text-center text-sm mb-6">
+          Add one or more photos. Set how many copies of each you need.
+        </p>
+
+        <!-- Drop Zone -->
+        <div
+          id="dropZone"
+          class="border-2 border-dashed border-gray-600 hover:border-blue-400 bg-gray-900/50 rounded-xl p-8 cursor-pointer transition-all text-center"
+        >
+          <input
+            type="file"
+            id="imageInput"
+            class="hidden"
+            accept="image/*"
+            multiple
+          />
+          <div class="flex flex-col items-center">
+            <svg
+              class="w-14 h-14 text-gray-500 mb-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4h-2m-6 4h6m-3-4v4"
+              />
+            </svg>
+            <p class="text-lg font-semibold">Drag & Drop or Click to Upload</p>
+            <p class="text-sm text-gray-400 mt-1">
+              Multiple photos supported • JPG, PNG, WEBP
+            </p>
+          </div>
+        </div>
+
+        <!-- Photo Cards List -->
+        <div id="photoList" class="mt-6 space-y-3"></div>
+
+        <!-- Add More Button (shown after first upload) -->
+        <div id="addMoreWrapper" class="hidden mt-3 text-center">
+          <button
+            id="addMoreBtn"
+            class="text-blue-400 hover:text-blue-300 text-sm border border-blue-400/40 rounded-lg px-4 py-2 transition-all hover:bg-blue-400/10"
+          >
+            + Add More Photos
+          </button>
+        </div>
+
+        <!-- Advanced Options -->
+        <div class="mt-8 space-y-4">
+          <div class="text-center">
+            <button
+              id="toggleAdvanced"
+              class="text-blue-400 hover:text-blue-300 transition-all text-sm"
+            >
+              Advanced Options
+            </button>
+          </div>
+          <div
+            id="advancedOptions"
+            class="hidden bg-gray-900/50 p-6 rounded-lg border border-gray-700"
+          >
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+              <div>
+                <label class="block mb-1 text-sm font-medium">Width (px)</label>
+                <input
+                  type="number"
+                  id="width"
+                  value="390"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block mb-1 text-sm font-medium"
+                  >Height (px)</label
+                >
+                <input
+                  type="number"
+                  id="height"
+                  value="480"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block mb-1 text-sm font-medium"
+                  >Spacing (px)</label
+                >
+                <input
+                  type="number"
+                  id="spacing"
+                  value="10"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block mb-1 text-sm font-medium"
+                  >Border (px)</label
+                >
+                <input
+                  type="number"
+                  id="border"
+                  value="2"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+          >
+            <button
+              id="generateBtn"
+              class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 glow-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Generate Sheet
+            </button>
+            <button
+              id="downloadBtn"
+              class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 hidden"
+            >
+              Download PDF
+            </button>
+          </div>
+          <div
+            id="loading"
+            class="hidden text-blue-400 font-semibold text-center"
+          >
+            Processing images... please wait
+          </div>
+        </div>
+
+        <!-- PDF Preview -->
+        <embed
+          id="pdfPreview"
+          type="application/pdf"
+          class="w-full h-[500px] mt-6 hidden rounded-lg"
+        />
+      </div>
+    </main>
+
+    <!-- Cropper Modal -->
+    <div id="cropperModal" class="cropper-modal-overlay hidden">
+      <div class="cropper-modal-box">
+        <h3 class="text-lg font-bold mb-3">Crop Photo</h3>
+        <div class="max-h-[400px] overflow-hidden rounded-lg">
+          <img
+            id="cropModalImage"
+            src=""
+            style="max-width: 100%; display: block"
+          />
+        </div>
+        <div class="flex gap-3 mt-4 justify-end">
+          <button
+            id="cancelCropBtn"
+            class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-5 rounded-lg transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirmCropBtn"
+            class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg transition-all"
+          >
+            Crop & Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Button -->
+    <button
+      id="feedbackBtn"
+      class="fixed bottom-5 right-5 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-full shadow-lg transition-all transform hover:rotate-12"
+    >
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+        />
+      </svg>
+    </button>
+
+    <!-- Feedback Modal -->
+    <div
+      id="feedbackModal"
+      class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-20 hidden"
+    >
+      <div
+        class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-8 max-w-md w-full relative"
+      >
+        <button
+          id="closeModal"
+          class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl"
+        >
+          &times;
+        </button>
+        <h2 class="text-2xl font-bold mb-4">Feedback / Bug Report</h2>
+        <form id="feedbackForm" class="space-y-4">
+          <input
+            type="text"
+            name="contact"
+            placeholder="Your Contact (Email or Phone)"
+            required
+            class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <textarea
+            name="message"
+            placeholder="Describe your issue or suggestion..."
+            required
+            rows="4"
+            class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Notification -->
+    <div
+      id="notification"
+      class="fixed bottom-1/2 right-5 text-white py-2 px-4 rounded-lg shadow-lg transform translate-x-[120%] transition-transform duration-500 z-50"
+    >
+      <p id="notification-message"></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+      emailjs.init("XJqjmVHK4ISEX0Zam");
+
+      particlesJS("particles-js", {
+        particles: {
+          number: { value: 80, density: { enable: true, value_area: 800 } },
+          color: { value: "#4a5568" },
+          shape: { type: "circle" },
+          opacity: { value: 0.5, random: true },
+          size: { value: 3, random: true },
+          line_linked: {
+            enable: true,
+            distance: 150,
+            color: "#718096",
+            opacity: 0.4,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            speed: 2,
+            direction: "none",
+            random: false,
+            straight: false,
+            out_mode: "out",
+          },
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: {
+            onhover: { enable: true, mode: "repulse" },
+            onclick: { enable: true, mode: "push" },
+          },
+          modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } },
+        },
+        retina_detect: true,
+      });
+
+      // ---- State ----
+      // photos: Array of { id, originalFile, croppedFile, previewUrl, copies }
+      let photos = [];
+      let nextId = 0;
+
+      // Cropper modal state
+      let activeCropper = null;
+      let pendingCropId = null;
+
+      // DOM refs
+      const dropZone = document.getElementById("dropZone");
+      const imageInput = document.getElementById("imageInput");
+      const photoList = document.getElementById("photoList");
+      const addMoreWrapper = document.getElementById("addMoreWrapper");
+      const addMoreBtn = document.getElementById("addMoreBtn");
+      const generateBtn = document.getElementById("generateBtn");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const pdfPreview = document.getElementById("pdfPreview");
+      const loading = document.getElementById("loading");
+      const toggleAdvanced = document.getElementById("toggleAdvanced");
+      const advancedOptions = document.getElementById("advancedOptions");
+      const cropperModal = document.getElementById("cropperModal");
+      const cropModalImage = document.getElementById("cropModalImage");
+      const confirmCropBtn = document.getElementById("confirmCropBtn");
+      const cancelCropBtn = document.getElementById("cancelCropBtn");
+      const notification = document.getElementById("notification");
+      const notifMsg = document.getElementById("notification-message");
+      const feedbackBtn = document.getElementById("feedbackBtn");
+      const feedbackModal = document.getElementById("feedbackModal");
+      const closeModal = document.getElementById("closeModal");
+      const feedbackForm = document.getElementById("feedbackForm");
+
+      // ---- Notifications ----
+      function showNotification(msg, isError = true) {
+        notifMsg.textContent = msg;
+        notification.classList.remove("bg-red-500", "bg-green-500");
+        notification.classList.add(isError ? "bg-red-500" : "bg-green-500");
+        notification.classList.remove("translate-x-[120%]");
+        notification.classList.add("translate-x-0");
+        setTimeout(() => {
+          notification.classList.remove("translate-x-0");
+          notification.classList.add("translate-x-[120%]");
+        }, 3000);
+      }
+
+      // ---- Render Photo Cards ----
+      function renderPhotoList() {
+        photoList.innerHTML = "";
+        photos.forEach((photo) => {
+          const card = document.createElement("div");
+          card.className =
+            "photo-card flex items-center gap-4 bg-gray-900/60 border border-gray-700 rounded-xl p-4";
+          card.innerHTML = `
+          <img src="${photo.previewUrl}" class="w-16 h-20 object-cover rounded-lg border border-gray-600 flex-shrink-0" />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-200 truncate">${photo.originalFile.name}</p>
+            <p class="text-xs text-gray-500 mt-0.5">${photo.croppedFile ? " Cropped" : " Not cropped"}</p>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <label class="text-xs text-gray-400">Copies</label>
+            <input type="number" value="${photo.copies}" min="1" max="54"
+              class="bg-gray-700 border border-gray-600 rounded-lg w-16 p-1.5 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-id="${photo.id}" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <button class="crop-btn text-xs bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-all" data-id="${photo.id}">Crop</button>
+            <button class="remove-btn text-xs bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg transition-all" data-id="${photo.id}">Remove</button>
+          </div>
+        `;
+          photoList.appendChild(card);
+        });
+
+        // Bind copies inputs
+        photoList.querySelectorAll("input[type=number]").forEach((input) => {
+          input.addEventListener("change", (e) => {
+            const id = parseInt(e.target.dataset.id);
+            const photo = photos.find((p) => p.id === id);
+            if (photo)
+              photo.copies = Math.max(1, parseInt(e.target.value) || 1);
+          });
+        });
+
+        // Bind crop buttons
+        photoList.querySelectorAll(".crop-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.target.dataset.id);
+            openCropper(id);
+          });
+        });
+
+        // Bind remove buttons
+        photoList.querySelectorAll(".remove-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.target.dataset.id);
+            photos = photos.filter((p) => p.id !== id);
+            renderPhotoList();
+            if (photos.length === 0) addMoreWrapper.classList.add("hidden");
+          });
+        });
+
+        addMoreWrapper.classList.toggle("hidden", photos.length === 0);
+      }
+
+      // ---- Add Files ----
+      function addFiles(files) {
+        const validTypes = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+        ];
+        let added = 0;
+        Array.from(files).forEach((file) => {
+          if (!validTypes.includes(file.type)) return;
+          const photo = {
+            id: nextId++,
+            originalFile: file,
+            croppedFile: null,
+            previewUrl: URL.createObjectURL(file),
+            copies: 6,
+          };
+          photos.push(photo);
+          added++;
+        });
+        if (added === 0)
+          showNotification("Please upload valid image files (JPG, PNG, WEBP).");
+        renderPhotoList();
+      }
+
+      // ---- Drop Zone ----
+      dropZone.addEventListener("click", () => imageInput.click());
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("border-blue-400", "bg-gray-700/50");
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("border-blue-400", "bg-gray-700/50");
+      });
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("border-blue-400", "bg-gray-700/50");
+        addFiles(e.dataTransfer.files);
+      });
+      imageInput.addEventListener("change", () => {
+        addFiles(imageInput.files);
+        imageInput.value = "";
+      });
+      addMoreBtn.addEventListener("click", () => imageInput.click());
+
+      // ---- Cropper Modal ----
+      function openCropper(id) {
+        const photo = photos.find((p) => p.id === id);
+        if (!photo) return;
+        pendingCropId = id;
+        cropModalImage.src = photo.previewUrl;
+        cropperModal.classList.remove("hidden");
+        if (activeCropper) activeCropper.destroy();
+        activeCropper = new Cropper(cropModalImage, {
+          aspectRatio: 384 / 472,
+          viewMode: 1,
+          dragMode: "move",
+          autoCropArea: 1,
+        });
+      }
+
+      confirmCropBtn.addEventListener("click", () => {
+        if (!activeCropper || pendingCropId === null) return;
+        const canvas = activeCropper.getCroppedCanvas({
+          width: 400,
+          height: 480,
+        });
+        canvas.toBlob((blob) => {
+          const photo = photos.find((p) => p.id === pendingCropId);
+          if (!photo) return;
+          photo.croppedFile = new File(
+            [blob],
+            "cropped-" + photo.originalFile.name,
+            { type: "image/png" },
+          );
+          photo.previewUrl = URL.createObjectURL(blob);
+          activeCropper.destroy();
+          activeCropper = null;
+          pendingCropId = null;
+          cropperModal.classList.add("hidden");
+          renderPhotoList();
+          showNotification("Photo cropped successfully.", false);
+        }, "image/png");
+      });
+
+      cancelCropBtn.addEventListener("click", () => {
+        if (activeCropper) {
+          activeCropper.destroy();
+          activeCropper = null;
+        }
+        pendingCropId = null;
+        cropperModal.classList.add("hidden");
+      });
+
+      // ---- Advanced Options ----
+      toggleAdvanced.addEventListener("click", () => {
+        const visible = advancedOptions.style.display === "block";
+        advancedOptions.style.display = visible ? "none" : "block";
+        toggleAdvanced.textContent = visible
+          ? "Advanced Options"
+          : "Hide Advanced Options";
+      });
+
+      // ---- Generate PDF ----
+      generateBtn.addEventListener("click", () => {
+        if (photos.length === 0) {
+          showNotification("Please upload at least one photo.");
+          return;
+        }
+
+        const formData = new FormData();
+        photos.forEach((photo, i) => {
+          // Use cropped file if available, else original
+          formData.append(
+            `image_${i}`,
+            photo.croppedFile || photo.originalFile,
+          );
+          formData.append(`copies_${i}`, photo.copies);
+        });
+        formData.append("width", document.getElementById("width").value);
+        formData.append("height", document.getElementById("height").value);
+        formData.append("spacing", document.getElementById("spacing").value);
+        formData.append("border", document.getElementById("border").value);
+
+        loading.classList.remove("hidden");
+        generateBtn.disabled = true;
+        downloadBtn.classList.add("hidden");
+        pdfPreview.classList.add("hidden");
+
+        fetch("/process", { method: "POST", body: formData })
+          .then(async (response) => {
+            if (response.status === 429) {
+              showNotification(
+                "Server Daily Quota Exceeded. Please try again later.",
+              );
+              return null;
+            }
+            if (response.status === 410) {
+              showNotification(
+                "Cannot Detect Face/Background in one of the images.",
+              );
+              return null;
+            }
+            if (response.status === 500) {
+              showNotification("Internal Error, try again later.");
+              return null;
+            }
+            if (!response.ok) throw new Error("Processing failed.");
+            return response.blob();
+          })
+          .then((blob) => {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            pdfPreview.classList.remove("hidden");
+            pdfPreview.src = url;
+            downloadBtn.classList.remove("hidden");
+            downloadBtn.onclick = () => {
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = "passport-sheet.pdf";
+              link.click();
+            };
+            showNotification("PDF generated successfully!", false);
+          })
+          .catch((err) => {
+            console.error(err);
+            showNotification("Image processing failed. Try again later.");
+          })
+          .finally(() => {
+            loading.classList.add("hidden");
+            generateBtn.disabled = false;
+          });
+      });
+
+      // ---- Feedback ----
+      feedbackBtn.addEventListener("click", () =>
+        feedbackModal.classList.remove("hidden"),
+      );
+      closeModal.addEventListener("click", () =>
+        feedbackModal.classList.add("hidden"),
+      );
+      feedbackForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const contact = feedbackForm.contact.value.trim();
+        const message = feedbackForm.message.value.trim();
+        if (!contact || !message) {
+          showNotification("Please fill out all fields.");
+          return;
+        }
+        const btn = feedbackForm.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+        emailjs
+          .send("service_aoewzsq", "template_hbw13lt", {
+            contact,
+            message,
+            user_agent: navigator.userAgent,
+            time: new Date().toLocaleString(),
+          })
+          .then(() => {
+            showNotification("Feedback submitted. Thank you!", false);
+            feedbackModal.classList.add("hidden");
+            feedbackForm.reset();
+          })
+          .catch((err) => {
+            console.error(err);
+            showNotification("Failed to send feedback. Please try again.");
+          })
+          .finally(() => {
+            btn.disabled = false;
+            btn.textContent = "Submit";
+          });
+      });
+    </script>
+    <script>
+      const handleAPIKey = () => {
+        const apiKey = document.getElementById("api-key-remove-bg");
+        const key = apiKey.value;
+        localStorage.setItem("remove-bg-api-key", key);
+        sendAPIKeyToFlask();
+      };
+
+      window.onload = () => {
+        const savedKey = localStorage.getItem("remove-bg-api-key");
+
+        if (savedKey) {
+          document.getElementById("api-key-remove-bg").value = savedKey;
+        }
+      };
+    </script>
+
+    <script>
+      const sendAPIKeyToFlask = async () => {
+        const key = localStorage.getItem("remove-bg-api-key");
+
+        const response = await fetch("/save-api-key", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ api_key: key }),
+        });
+
+        const result = await response.json();
+        console.log(result);
+      };
+    </script>
+  </body>
+</html>
