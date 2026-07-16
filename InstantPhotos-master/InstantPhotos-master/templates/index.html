@@ -96,11 +96,22 @@
     </div>
 
     <div class="flex justify-center items-center">
-      <input class="m-4 p-2 hover:bg-blue-400 hover:scale-105 transition-all transform rounded-xl text-sm w-[400px] text-black bg-blue-100"  placeholder="Enter Your Remove BG API Key"  type="text" id="api-key-remove-bg" />
+      <input class="m-4 p-2 hover:bg-blue-400 hover:scale-105 transition-all transform rounded-xl text-sm w-[400px] text-black bg-blue-100"  placeholder="Paste your Remove.bg API key"  type="password" id="api-key-remove-bg" />
       <button onclick="handleAPIKey()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all transform hover:scale-105 glow-shadow disabled:opacity-50 disabled:cursor-not-allowed" >
         Save API Key
       </button>
     </div>
+    <div style="text-align: center;">
+    <p class="text-light mt-2">
+    Don't have an API Key?
+    <a
+        href="https://www.remove.bg/api"
+        
+    >
+        Click here
+    </a>
+    </div>
+</p>
 
     <!-- Main -->
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -705,12 +716,12 @@
       });
     </script>
     <script>
-      const handleAPIKey = () => {
-        const apiKey = document.getElementById("api-key-remove-bg");
-        const key = apiKey.value;
-        localStorage.setItem("remove-bg-api-key", key);
-        sendAPIKeyToFlask();
-      };
+ //     const handleAPIKey = () => {
+ //       const apiKey = document.getElementById("api-key-remove-bg");
+ //       const key = apiKey.value;
+ //       localStorage.setItem("remove-bg-api-key", key);
+ //       sendAPIKeyToFlask();
+ //     };
 
       window.onload = () => {
         const savedKey = localStorage.getItem("remove-bg-api-key");
@@ -736,6 +747,21 @@
         const result = await response.json();
         console.log(result);
       };
+
+      
+      async function handleAPIKey() {
+  const apiKey = document.getElementById("api-key-remove-bg").value.trim();
+
+  if (apiKey === "") {
+    showNotification("Please enter a remove.bg API key");
+    return;
+  }
+
+  localStorage.setItem("remove-bg-api-key", apiKey);
+  await sendAPIKeyToFlask();
+
+  showNotification("API Key saved successfully!", false);
+}
     </script>
   </body>
 </html>
